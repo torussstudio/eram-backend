@@ -75,6 +75,7 @@ export const loginAdmin = async (req, res) => {
 
 res.status(200).json({
   success: true,
+  token,
   admin: {
     id: admin._id,
     email: admin.email,
