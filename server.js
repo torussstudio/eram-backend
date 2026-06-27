@@ -7,6 +7,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { loginLimiter } from "./middleware/rateLimiter.js";
+import heroRoutes from "./routes/heroRoutes.js";
 
 // Load environment variables based on NODE_ENV
 const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env.development";
@@ -43,6 +44,7 @@ app.use("/api/auth/login", loginLimiter);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/hero", heroRoutes);
 
 app.get("/", (req, res) => {
   res.send("ERAM Backend Running 🚀");
