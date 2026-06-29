@@ -147,3 +147,24 @@ const imageUrl = `${backendBaseUrl}/uploads/hero/${req.file.filename}`;
   }
 };
 
+// One-time fix: localhost URLs → production URLs
+export const fixImageUrls = async (req, res) => {
+  try {
+    const hero = await Hero.findOne();
+    if (!hero) return res.status(404).json({ message: "Not found" });
+
+    hero.slides = hero.slides.map((slide) => ({
+      ...slide.toObject(),
+      image: slide.image.replace(
+        "http://localhost:5000",
+        process.env.BACKEND_URL
+      ),
+    }));
+
+    await hero.save();
+    res.json({ success: true, message: "URLs fixed", data: hero });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+

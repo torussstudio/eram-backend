@@ -11,5 +11,6 @@ const router = express.Router();
 router.get("/", getHero);
 router.put("/", updateHero);
 router.post("/upload-image", handleHeroImageUpload, uploadSlideImage);
+router.post("/fix-urls", fixImageUrls);
 
 export default router;
