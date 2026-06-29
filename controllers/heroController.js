@@ -118,3 +118,32 @@ export const updateHero = async (req, res) => {
     });
   }
 };
+
+/**
+ * UPLOAD Hero Slide Image
+ */
+export const uploadSlideImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file received.",
+      });
+    }
+
+    const backendBaseUrl = process.env.BACKEND_URL || "http://localhost:5000";
+const imageUrl = `${backendBaseUrl}/uploads/hero/${req.file.filename}`;
+
+    res.status(200).json({
+      success: true,
+      message: "Image uploaded successfully",
+      data: { image: imageUrl },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

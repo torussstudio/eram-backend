@@ -1,9 +1,15 @@
 import express from "express";
-import { getHero, updateHero } from "../controllers/heroController.js";
+import {
+  getHero,
+  updateHero,
+  uploadSlideImage,
+} from "../controllers/heroController.js";
+import { handleHeroImageUpload } from "../middleware/upload.js";
 
 const router = express.Router();
 
 router.get("/", getHero);
 router.put("/", updateHero);
+router.post("/upload-image", handleHeroImageUpload, uploadSlideImage);
 
 export default router;
