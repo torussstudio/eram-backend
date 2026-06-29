@@ -1,4 +1,11 @@
 import Hero from "../models/Hero.js";
+import { v2 as cloudinary } from "cloudinary";  
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 /**
  * GET Hero Content
@@ -125,25 +132,26 @@ export const updateHero = async (req, res) => {
 export const uploadSlideImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No image file received.",
-      });
+      return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    const backendBaseUrl = process.env.BACKEND_URL || "http://localhost:5000";
-const imageUrl = `${backendBaseUrl}/uploads/hero/${req.file.filename}`;
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: "eram/hero", resource_type: "image" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Image uploaded successfully",
-      data: { image: imageUrl },
+      data: { image: result.secure_url },
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
