@@ -3,6 +3,7 @@ import {
   getHero,
   updateHero,
   uploadSlideImage,
+   fixImageUrls, 
 } from "../controllers/heroController.js";
 import { handleHeroImageUpload } from "../middleware/upload.js";
 
