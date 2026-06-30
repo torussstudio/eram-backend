@@ -43,8 +43,16 @@ export const uploadImage = async (req, res) => {
       const filepath = path.join(dir, filename);
       fs.writeFileSync(filepath, req.file.buffer);
 
-      const backendBaseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
-      imageUrl = `${backendBaseUrl}/uploads/gallery/${filename}`;
+      const backendBaseUrl =
+  process.env.NODE_ENV === "production"
+    ? process.env.BACKEND_URL
+    : `http://localhost:${process.env.PORT || 5000}`;
+
+if (!backendBaseUrl) {
+  throw new Error("BACKEND_URL is not configured");
+}
+
+imageUrl = `${backendBaseUrl}/uploads/gallery/${filename}`;
       publicId = filename; // use filename as identifier for deletion
     }
 
