@@ -13,10 +13,6 @@ const streamUpload = (buffer) =>
   });
 
 export const uploadImage = async (req, res) => {
-  console.log("=== Gallery Upload ===");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("CLOUDINARY_API_KEY:", !!process.env.CLOUDINARY_API_KEY);
-console.log("BACKEND_URL:", process.env.BACKEND_URL);
   try {
     const { title, category, type, aspect } = req.body;
     if (!req.file) return res.status(400).json({ message: "Image required" });
@@ -26,7 +22,6 @@ console.log("BACKEND_URL:", process.env.BACKEND_URL);
     let finalAspect = aspect;
 
     if (process.env.CLOUDINARY_API_KEY) {
-      console.log(">>> USING CLOUDINARY <<<");
       const result = await streamUpload(req.file.buffer);
       imageUrl = result.secure_url;
       publicId = result.public_id;
@@ -37,7 +32,6 @@ console.log("BACKEND_URL:", process.env.BACKEND_URL);
       }
     } else {
       // Local fallback
-      console.log(">>> USING LOCAL STORAGE <<<");
       const ext = path.extname(req.file.originalname) || ".jpg";
       const filename = `gallery-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
       const dir = path.join(process.cwd(), "public", "uploads", "gallery");
