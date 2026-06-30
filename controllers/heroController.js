@@ -1,11 +1,8 @@
 import Hero from "../models/Hero.js";
-import { v2 as cloudinary } from "cloudinary";  
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
+import path from "path";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 /**
  * GET Hero Content
@@ -135,20 +132,39 @@ export const uploadSlideImage = async (req, res) => {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        { folder: "eram/hero", resource_type: "image" },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      ).end(req.file.buffer);
-    });
+    let imageUrl;
+    if (process.env.CLOUDINARY_API_KEY) {
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: "eram/hero", resource_type: "image" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file.buffer);
+      });
+      imageUrl = result.secure_url;
+    } else {
+      // Local fallback
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `hero-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+      const dir = path.join(process.cwd(), "public", "uploads", "hero");
+      
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      
+      const filepath = path.join(dir, filename);
+      fs.writeFileSync(filepath, req.file.buffer);
+
+      const backendBaseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+      imageUrl = `${backendBaseUrl}/uploads/hero/${filename}`;
+    }
 
     return res.status(200).json({
       success: true,
       message: "Image uploaded successfully",
-      data: { image: result.secure_url },
+      data: { image: imageUrl },
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
