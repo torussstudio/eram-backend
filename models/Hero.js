@@ -22,6 +22,11 @@ const slideSchema = new mongoose.Schema(
       default: "",
     },
 
+    sublineLogo: {
+      type: String,
+      default: "",
+    },
+
     description: {
       type: String,
       default: "",
@@ -37,7 +42,7 @@ const slideSchema = new mongoose.Schema(
       link: String,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const heroSchema = new mongoose.Schema(
@@ -46,7 +51,7 @@ const heroSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("Hero", heroSchema);

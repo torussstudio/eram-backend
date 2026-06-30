@@ -149,11 +149,11 @@ export const uploadSlideImage = async (req, res) => {
       const ext = path.extname(req.file.originalname) || ".jpg";
       const filename = `hero-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
       const dir = path.join(process.cwd(), "public", "uploads", "hero");
-      
+
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      
+
       const filepath = path.join(dir, filename);
       fs.writeFileSync(filepath, req.file.buffer);
 
