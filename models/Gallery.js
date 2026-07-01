@@ -10,7 +10,7 @@ const gallerySchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["sports", "cultural", "social", "academic"],
+      enum: ["general", "sports", "cultural", "social", "academic"],
       required: true,
     },
     image: { type: String, required: true },
