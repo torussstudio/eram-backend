@@ -1,5 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import Download from "../models/Download.js";
+import axios from "axios";
 import fs from "fs";
 import path from "path";
 
@@ -108,5 +109,48 @@ export const deleteDownload = async (req, res) => {
     res.json({ message: "Deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const downloadFile = async (req, res) => {
+  try {
+    const doc = await Download.findById(req.params.id);
+
+    if (!doc) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    // Local storage
+    if (!process.env.CLOUDINARY_API_KEY) {
+      const filePath = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        "downloads",
+        doc.publicId
+      );
+
+      return res.download(filePath, `${doc.title}.pdf`);
+    }
+
+    // Cloudinary
+    const response = await axios({
+      url: doc.fileUrl,
+      method: "GET",
+      responseType: "stream",
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${doc.title}.pdf"`
+    );
+
+    response.data.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Download failed",
+    });
   }
 };
