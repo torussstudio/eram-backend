@@ -10,6 +10,9 @@ import { loginLimiter } from "./middleware/rateLimiter.js";
 import heroRoutes from "./routes/heroRoutes.js";
 import path from "path";
 import galleryRoutes from "./routes/galleryRoutes.js";
+import downloadRoutes from "./routes/downloadRoutes.js";
+
+
 
 
 // Load environment variables based on NODE_ENV
@@ -59,6 +62,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/hero", heroRoutes);
 app.use("/api/gallery", galleryRoutes);
+app.use("/api/downloads", downloadRoutes);
 
 app.get("/", (req, res) => {
   res.send("ERAM Backend Running 🚀");

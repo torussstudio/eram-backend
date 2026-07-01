@@ -18,7 +18,14 @@ export const handleHeroImageUpload = upload.single("image");
 // export const handleGalleryImageUpload = upload.single("image");
 export const handleGalleryImageUpload = (req, res, next) => {
   upload.single("image")(req, res, (err) => {
-    console.log("=== UPLOAD DEBUG ===");
+    next(err);
+  });
+};
+
+// Downloads — single PDF field named "file"
+export const handleDownloadFileUpload = (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    console.log("=== DOWNLOAD UPLOAD DEBUG ===");
     console.log("Multer error:", err);
     console.log("req.file:", req.file);
     console.log("req.body:", req.body);
