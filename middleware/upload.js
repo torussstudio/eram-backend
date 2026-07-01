@@ -1,11 +1,3 @@
-// import multer from "multer";
-
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage });
-
-// export const handleHeroImageUpload = upload.single("image");
-
-
 import multer from "multer";
 
 const storage = multer.memoryStorage();

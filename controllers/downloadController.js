@@ -3,13 +3,23 @@ import Download from "../models/Download.js";
 import fs from "fs";
 import path from "path";
 
-const streamUpload = (buffer) =>
+const streamUpload = (file) =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: "eram-downloads", resource_type: "raw" },
-      (error, result) => (result ? resolve(result) : reject(error))
+      {
+        folder: "eram-downloads",
+        resource_type: "raw",
+        use_filename: true,
+        unique_filename: false,
+        filename_override: file.originalname,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
     );
-    stream.end(buffer);
+
+    stream.end(file.buffer);
   });
 
 export const uploadDownload = async (req, res) => {
@@ -21,7 +31,7 @@ export const uploadDownload = async (req, res) => {
     let publicId;
 
     if (process.env.CLOUDINARY_API_KEY) {
-      const result = await streamUpload(req.file.buffer);
+      const result = await streamUpload(req.file);
       fileUrl = result.secure_url;
       publicId = result.public_id;
     } else {
