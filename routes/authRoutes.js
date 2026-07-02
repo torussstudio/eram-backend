@@ -10,7 +10,7 @@ import { validateLoginInput, validateRegisterInput } from "../validations/authVa
 
 const router = express.Router();
 
-router.post("/register", validateRegisterInput, createAdmin);
+router.post("/register", protect, validateRegisterInput, createAdmin);
 router.post("/login", validateLoginInput, loginAdmin);
 router.post("/logout", protect, logoutAdmin);
 router.get("/me", protect, getMe);

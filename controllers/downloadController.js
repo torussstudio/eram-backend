@@ -1,8 +1,168 @@
+// import cloudinary from "../config/cloudinary.js";
+// import Download from "../models/Download.js";
+// import axios from "axios";
+// import fs from "fs";
+// import path from "path";
+
+// const streamUpload = (file) =>
+//   new Promise((resolve, reject) => {
+//     const stream = cloudinary.uploader.upload_stream(
+//       {
+//         folder: "eram-downloads",
+//         resource_type: "raw",
+//         use_filename: true,
+//         unique_filename: false,
+//         filename_override: file.originalname,
+//       },
+//       (error, result) => {
+//         if (error) return reject(error);
+//         resolve(result);
+//       }
+//     );
+
+//     stream.end(file.buffer);
+//   });
+
+// export const uploadDownload = async (req, res) => {
+//   try {
+//     const { title, description, category, institution } = req.body;
+//     if (!req.file) return res.status(400).json({ message: "File required" });
+
+//     let fileUrl;
+//     let publicId;
+
+//     if (process.env.CLOUDINARY_API_KEY) {
+//       const result = await streamUpload(req.file);
+//       fileUrl = result.secure_url;
+//       publicId = result.public_id;
+//     } else {
+//       // Local fallback
+//       const ext = path.extname(req.file.originalname) || ".pdf";
+//       const filename = `download-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+//       const dir = path.join(process.cwd(), "public", "uploads", "downloads");
+
+//       if (!fs.existsSync(dir)) {
+//         fs.mkdirSync(dir, { recursive: true });
+//       }
+
+//       const filepath = path.join(dir, filename);
+//       fs.writeFileSync(filepath, req.file.buffer);
+
+//       const backendBaseUrl =
+//         process.env.NODE_ENV === "production"
+//           ? process.env.BACKEND_URL
+//           : `http://localhost:${process.env.PORT || 5000}`;
+
+//       if (!backendBaseUrl) {
+//         throw new Error("BACKEND_URL is not configured");
+//       }
+
+//       fileUrl = `${backendBaseUrl}/uploads/downloads/${filename}`;
+//       publicId = filename;
+//     }
+
+//     const newDownload = await Download.create({
+//       title,
+//       description,
+//       category,
+//       institution: institution || "general",
+//       fileType: "PDF",
+//       fileUrl,
+//       publicId,
+//     });
+
+//     res.status(201).json(newDownload);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+// export const getDownloads = async (req, res) => {
+//   try {
+//     const { category, institution } = req.query;
+//     const filter = {};
+//     if (category && category !== "all") filter.category = category;
+//     if (institution && institution !== "all") filter.institution = institution;
+
+//     const downloads = await Download.find(filter).sort({ createdAt: -1 });
+//     res.json(downloads);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+// export const deleteDownload = async (req, res) => {
+//   try {
+//     const doc = await Download.findById(req.params.id);
+//     if (!doc) return res.status(404).json({ message: "Not found" });
+
+//     if (process.env.CLOUDINARY_API_KEY && doc.publicId && !doc.publicId.startsWith("download-")) {
+//       await cloudinary.uploader.destroy(doc.publicId, { resource_type: "raw" });
+//     } else {
+//       const filepath = path.join(process.cwd(), "public", "uploads", "downloads", doc.publicId);
+//       if (fs.existsSync(filepath)) {
+//         fs.unlinkSync(filepath);
+//       }
+//     }
+
+//     await doc.deleteOne();
+//     res.json({ message: "Deleted" });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+// export const downloadFile = async (req, res) => {
+//   try {
+//     const doc = await Download.findById(req.params.id);
+
+//     if (!doc) {
+//       return res.status(404).json({ message: "File not found" });
+//     }
+
+//     // Local storage
+//     if (!process.env.CLOUDINARY_API_KEY) {
+//       const filePath = path.join(
+//         process.cwd(),
+//         "public",
+//         "uploads",
+//         "downloads",
+//         doc.publicId
+//       );
+
+//       return res.download(filePath, `${doc.title}.pdf`);
+//     }
+
+//     // Cloudinary
+//     const response = await axios({
+//       url: doc.fileUrl,
+//       method: "GET",
+//       responseType: "stream",
+//     });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="${doc.title}.pdf"`
+//     );
+
+//     response.data.pipe(res);
+// } catch (err) {
+//     console.error("Cloudinary fetch failed:", err.response?.status, err.response?.data || err.message);
+//     res.status(500).json({
+//       message: "Download failed",
+//     });
+//   }
+// };
+
+
+
 import cloudinary from "../config/cloudinary.js";
 import Download from "../models/Download.js";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
+import { getFileMeta } from "../utils/fileTypes.js";
 
 const streamUpload = (file) =>
   new Promise((resolve, reject) => {
@@ -23,10 +183,18 @@ const streamUpload = (file) =>
     stream.end(file.buffer);
   });
 
+// Turns "My Cool Title!" into "My_Cool_Title" so it's safe to use as a filename
+function sanitizeFilename(name) {
+  return name.replace(/[^a-zA-Z0-9-_ ]/g, "").trim().replace(/\s+/g, "_");
+}
+
 export const uploadDownload = async (req, res) => {
   try {
     const { title, description, category, institution } = req.body;
     if (!req.file) return res.status(400).json({ message: "File required" });
+
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const { label } = getFileMeta(ext);
 
     let fileUrl;
     let publicId;
@@ -37,7 +205,6 @@ export const uploadDownload = async (req, res) => {
       publicId = result.public_id;
     } else {
       // Local fallback
-      const ext = path.extname(req.file.originalname) || ".pdf";
       const filename = `download-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
       const dir = path.join(process.cwd(), "public", "uploads", "downloads");
 
@@ -66,7 +233,8 @@ export const uploadDownload = async (req, res) => {
       description,
       category,
       institution: institution || "general",
-      fileType: "PDF",
+      fileType: label,
+      fileExtension: ext,
       fileUrl,
       publicId,
     });
@@ -120,6 +288,10 @@ export const downloadFile = async (req, res) => {
       return res.status(404).json({ message: "File not found" });
     }
 
+    const ext = doc.fileExtension || ".pdf";
+    const { contentType } = getFileMeta(ext);
+    const filename = `${sanitizeFilename(doc.title)}${ext}`;
+
     // Local storage
     if (!process.env.CLOUDINARY_API_KEY) {
       const filePath = path.join(
@@ -130,7 +302,7 @@ export const downloadFile = async (req, res) => {
         doc.publicId
       );
 
-      return res.download(filePath, `${doc.title}.pdf`);
+      return res.download(filePath, filename);
     }
 
     // Cloudinary
@@ -140,15 +312,12 @@ export const downloadFile = async (req, res) => {
       responseType: "stream",
     });
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${doc.title}.pdf"`
-    );
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     response.data.pipe(res);
   } catch (err) {
-    console.error(err);
+    console.error("Cloudinary fetch failed:", err.response?.status, err.response?.data || err.message);
     res.status(500).json({
       message: "Download failed",
     });

@@ -23,10 +23,12 @@ dotenv.config(); // fallback
 connectDB();
 
 const app = express();
+if (process.env.NODE_ENV !== "production") {
 app.use((req, res, next) => {
   console.log(">>> INCOMING REQUEST:", req.method, req.url);
   next();
 });
+}
 
 
 const allowedOrigins = process.env.CORS_ORIGIN 
@@ -57,7 +59,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 
 app.use("/api/auth/login", loginLimiter);
-
+app.use("/api/auth/register", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/hero", heroRoutes);
