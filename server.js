@@ -69,7 +69,7 @@ app.use("/api/downloads", downloadRoutes);
 app.use("/api/events", eventRoutes);
 
 app.get("/", (req, res) => {
-  res.send("ERAM Backend Running 🚀");
+  res.send("ERAM Backend Running 🚀");a
 });
 
 // Global error handler
