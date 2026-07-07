@@ -12,6 +12,8 @@ import path from "path";
 import galleryRoutes from "./routes/galleryRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import academicRoutes from "./routes/academicRoutes.js";
+
 
 
 
@@ -67,9 +69,10 @@ app.use("/api/hero", heroRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/academics", academicRoutes);
 
 app.get("/", (req, res) => {
-  res.send("ERAM Backend Running 🚀");a
+  res.send("ERAM Backend Running 🚀");
 });
 
 // Global error handler

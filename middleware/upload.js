@@ -22,8 +22,12 @@ export const handleEventImageUpload = (req, res, next) => {
   });
 };
 
-// Downloads — single file field named "file"
-// Allows PDF, PNG, JPEG, DOC/DOCX, XLS/XLSX (see utils/fileTypes.js)
+export const handleAcademicImageUpload = (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    next(err);
+  });
+};
+
 const downloadUpload = multer({
   storage,
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB — doc/xlsx files can be bigger than a PDF
