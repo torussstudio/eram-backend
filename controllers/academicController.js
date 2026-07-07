@@ -61,9 +61,6 @@ export const createAcademic = async (req, res) => {
       return res.status(400).json({ message: "school and section are required" });
     }
 
-    if (section === "excellence" && !req.file) {
-      return res.status(400).json({ message: "Image required for Excellence entries" });
-    }
 
     let imageUrl;
     let publicId;
