@@ -5,7 +5,7 @@ const gallerySchema = new mongoose.Schema(
     title: { type: String, required: true },
     category: {
       type: String,
-      enum: ["general", "mmhss", "mmps", "amlp", "mmite"],
+      enum: ["trust", "mmhss", "mmps", "amlp", "mmite", "ease"],
       required: true,
     },
     type: {
@@ -20,11 +20,6 @@ const gallerySchema = new mongoose.Schema(
       enum: ["portrait", "landscape", "square"],
       default: "landscape",
     },
-    category: {
-  type: String,
-  enum: ["general", "mmhss", "mmps", "amlp", "mmite", "ease"],
-  required: true,
-},
   },
   { timestamps: true }
 );
