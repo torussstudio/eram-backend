@@ -20,6 +20,7 @@ const eventSchema = new mongoose.Schema(
       default: "general",
     },
     date: { type: Date, required: true },
+    time: { type: String }, // only relevant when type === "event"
     tag: { type: String },
     isPinned: { type: Boolean, default: false },
     image: { type: String }, // only relevant when type === "event"

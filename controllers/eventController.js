@@ -22,7 +22,7 @@ const streamUpload = (buffer) =>
 
 export const createEvent = async (req, res) => {
   try {
-    const { title, description, category, type, institution, date, tag, isPinned } =
+    const { title, description, category, type, institution, date, time, tag, isPinned } =
       req.body;
 
     if (!title || !description || !category || !type || !date) {
@@ -36,6 +36,7 @@ export const createEvent = async (req, res) => {
       type,
       institution: institution || "general",
       date,
+      time: type === "event" ? time || undefined : undefined,
       tag,
       isPinned: isPinned === true || isPinned === "true",
       // image/publicId come from the separate /upload-image step, sent in body once uploaded
@@ -73,6 +74,7 @@ export const updateEvent = async (req, res) => {
       "type",
       "institution",
       "date",
+      "time",
       "tag",
       "isPinned",
       "image",
@@ -82,11 +84,11 @@ export const updateEvent = async (req, res) => {
       if (req.body[f] !== undefined) event[f] = req.body[f];
     });
 
-    // switched back to notification → drop any leftover image reference
-    // (the actual file on Cloudinary/disk is left as-is; only the reference is cleared)
+    // switched back to notification → drop any leftover image/time reference
     if (event.type === "notification") {
       event.image = undefined;
       event.publicId = undefined;
+      event.time = undefined;
     }
 
     await event.save();
