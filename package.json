@@ -4,10 +4,10 @@
   "description": "",
   "type": "module",
   "main": "server.js",
-  "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
-  },
+ "scripts": {
+  "dev": "cross-env NODE_ENV=development nodemon server.js",
+  "start": "cross-env NODE_ENV=production node server.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -26,6 +26,7 @@
     "multer": "^2.2.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "nodemon": "^3.1.14"
   }
 }
