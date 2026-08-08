@@ -13,7 +13,7 @@ import galleryRoutes from "./routes/galleryRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import academicRoutes from "./routes/academicRoutes.js";
-import hostEventRoutes from "./routes/hostEventRoutes.js";
+import hostEventRoutes from "./routes/Hosteventroutes.js";
 
 
 
