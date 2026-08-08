@@ -5,7 +5,7 @@ const gallerySchema = new mongoose.Schema(
     title: { type: String, required: true },
     category: {
       type: String,
-      enum: ["trust", "mmhss", "mmps", "amlp", "mmite", "ease"],
+      enum: ["trust", "mmhss", "mmps", "amlp", "mmite", "ease", "sportsarena"],
       required: true,
     },
     type: {
@@ -21,7 +21,7 @@ const gallerySchema = new mongoose.Schema(
       default: "landscape",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Gallery", gallerySchema);
