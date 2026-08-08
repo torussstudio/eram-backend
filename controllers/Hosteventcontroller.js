@@ -1,4 +1,4 @@
-import HostEvent from "../models/HostEvent.js";
+import HostEvent from "../models/Hostevent.js";
 
 // Public — submitted from the "Host an Event" modal on the frontend
 export const submitHostEvent = async (req, res) => {

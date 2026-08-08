@@ -6,7 +6,7 @@ import {
   getHostEventById,
   updateHostEventStatus,
   deleteHostEvent,
-} from "../controllers/hostEventController.js";
+} from "../controllers/Hosteventcontroller.js";
 
 const router = express.Router();
 
