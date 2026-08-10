@@ -76,7 +76,11 @@ app.use("/api/host-event", hostEventRoutes);
 app.get("/", (req, res) => {
   res.send("ERAM Backend Running 🚀");
 });
-
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+  });
+});
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
