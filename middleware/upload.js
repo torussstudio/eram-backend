@@ -1,0 +1,54 @@
+import multer from "multer";
+import path from "path";
+import { isAllowedExtension, ALLOWED_EXTENSIONS } from "../utils/fileTypes.js";
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+
+// Hero section — single image field named "image"
+export const handleHeroImageUpload = upload.single("image");
+
+// Gallery — also single image field named "image"
+export const handleGalleryImageUpload = (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    next(err);
+  });
+};
+
+// Events — single image field named "image", only used when type === "event"
+export const handleEventImageUpload = (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    next(err);
+  });
+};
+
+export const handleAcademicImageUpload = (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    next(err);
+  });
+};
+
+const downloadUpload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!isAllowedExtension(ext)) {
+      return cb(
+        new Error(
+          `File type ${ext || "unknown"} not allowed. Allowed types: ${ALLOWED_EXTENSIONS.join(", ")}`
+        )
+      );
+    }
+    cb(null, true);
+  },
+});
+
+export const handleDownloadFileUpload = (req, res, next) => {
+  downloadUpload.single("file")(req, res, (err) => {
+    next(err);
+  });
+};
+
+
+export default upload;
