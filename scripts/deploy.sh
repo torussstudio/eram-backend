@@ -78,18 +78,46 @@ rollback() {
 
   cleanup_new
 
-  if docker ps --format '{{.Names}}' | grep -qx "$APP_NAME"; then
-    echo "Removing failed promoted container..."
+  if docker ps -a --format '{{.Names}}' | grep -qx "$APP_NAME"; then
+    echo "Removing failed production container..."
     docker rm -f "$APP_NAME" >/dev/null 2>&1 || true
   fi
 
   if docker ps -a --format '{{.Names}}' | grep -qx "$OLD_CONTAINER"; then
     echo "Restoring previous production container..."
+
     docker rename "$OLD_CONTAINER" "$APP_NAME" 2>/dev/null || true
+
     docker start "$APP_NAME" >/dev/null 2>&1 || true
+
+    echo "Verifying restored production container..."
+
+    ROLLBACK_HEALTH_OK=0
+
+    for i in $(seq 1 15); do
+      if docker exec "$APP_NAME" sh -c \
+        "wget -qO- $HEALTH_URL" >/dev/null 2>&1; then
+        ROLLBACK_HEALTH_OK=1
+        break
+      fi
+
+      echo "Rollback health check attempt $i/15..."
+      sleep 2
+    done
+
+    if [ "$ROLLBACK_HEALTH_OK" -ne 1 ]; then
+      echo "ERROR: Rollback container failed health check."
+      docker logs --tail 50 "$APP_NAME" || true
+      return 1
+    fi
+
+    echo "Rollback health check passed."
+    echo "Previous production version restored successfully."
+    return 0
   fi
 
-  echo "Rollback completed."
+  echo "ERROR: Previous production container was not found."
+  return 1
 }
 
 trap 'rollback' INT TERM
