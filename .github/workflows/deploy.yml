@@ -1,6 +1,9 @@
 name: Backend CI/CD
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -22,3 +25,28 @@ jobs:
 
       - name: Validate backend
         run: node --check server.js
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/toruss/projects/eram/backend
+
+            git fetch origin main
+            git reset --hard origin/main
+
+            export GITHUB_SHA="${{ github.sha }}"
+
+            chmod +x scripts/deploy.sh
+            ./scripts/deploy.sh
