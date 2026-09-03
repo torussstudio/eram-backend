@@ -3,3 +3,6 @@ node_modules
 .env.*
 .env.development
 .env.production
+# Local backups
+*.backup-*
+server-backups-*/

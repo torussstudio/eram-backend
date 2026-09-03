@@ -14,7 +14,8 @@ import downloadRoutes from "./routes/downloadRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import academicRoutes from "./routes/academicRoutes.js";
 import hostEventRoutes from "./routes/Hosteventroutes.js";
-
+import contactRoutes from "./routes/contactRoutes.js";
+import { verifyMailTransport } from "./services/mailService.js";
 
 
 
@@ -25,6 +26,12 @@ dotenv.config({ path: envFile });
 dotenv.config(); // fallback
 
 connectDB();
+
+if (process.env.NODE_ENV === "production") {
+  verifyMailTransport().catch((err) => {
+    console.error("SMTP verification failed:", err.message);
+  });
+}
 
 const app = express();
 if (process.env.NODE_ENV !== "production") {
@@ -72,6 +79,7 @@ app.use("/api/downloads", downloadRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/academics", academicRoutes);
 app.use("/api/host-event", hostEventRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.get("/", (req, res) => {
   res.send("ERAM Backend Running 🚀");
