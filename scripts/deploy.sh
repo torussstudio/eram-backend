@@ -18,12 +18,56 @@ echo " ERAM BACKEND DEPLOYMENT"
 echo "========================================"
 echo "Image: ${IMAGE}"
 
+# Capture the currently running production image before deployment.
+PREVIOUS_IMAGE="$(docker inspect "$APP_NAME" \
+  --format '{{.Config.Image}}' 2>/dev/null || true)"
+
+echo "Previous production image: ${PREVIOUS_IMAGE:-none}"
+
 cleanup_new() {
   docker rm -f "$NEW_CONTAINER" >/dev/null 2>&1 || true
 }
 
 cleanup_old() {
   docker rm -f "$OLD_CONTAINER" >/dev/null 2>&1 || true
+}
+
+cleanup_old_images() {
+  echo
+  echo "=== CLEAN OLD BACKEND IMAGES ==="
+
+  CURRENT_IMAGE="$(docker inspect "$APP_NAME" \
+    --format '{{.Config.Image}}' 2>/dev/null || true)"
+
+  echo "Current production image: ${CURRENT_IMAGE:-none}"
+  echo "Previous production image: ${PREVIOUS_IMAGE:-none}"
+
+  docker images 'eram-backend' \
+    --format '{{.Repository}}:{{.Tag}}' \
+    | while IFS= read -r image; do
+
+        [ -n "$image" ] || continue
+
+        if [ "$image" = "$CURRENT_IMAGE" ]; then
+          echo "KEEP current image: $image"
+          continue
+        fi
+
+        if [ -n "$PREVIOUS_IMAGE" ] && [ "$image" = "$PREVIOUS_IMAGE" ]; then
+          echo "KEEP previous image: $image"
+          continue
+        fi
+
+        echo "REMOVE old image: $image"
+
+        docker image rm "$image" >/dev/null 2>&1 || \
+          echo "SKIP image still in use: $image"
+
+      done
+
+  docker image prune -f >/dev/null 2>&1 || true
+
+  echo "Old backend image cleanup completed."
 }
 
 rollback() {
@@ -146,3 +190,5 @@ docker exec "$APP_NAME" sh -c "wget -qO- $HEALTH_URL"
 echo
 echo "Image:"
 docker inspect "$APP_NAME" --format '{{.Config.Image}}'
+
+cleanup_old_images
